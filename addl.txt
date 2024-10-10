@@ -1,0 +1,490 @@
+package Poultry_Monitoring_System
+public
+
+  -- Define the main system
+  system Poultry_Monitoring_System
+  end Poultry_Monitoring_System;
+
+  system implementation Poultry_Monitoring_System.impl
+    subcomponents
+      sensor_subsystem: system Sensor_Subsystem;
+      rfid_subsystem: system RFID_Subsystem;
+      auth_subsystem: system Authentication_Subsystem;
+      data_stream: system Data_Stream;
+      info_processing: system Information_Processing;
+      data_storage: system Data_Storage;
+      feedback_loop: system Feedback_Loop;
+      user_interaction: system User_Interaction;
+    connections
+      conn1: port sensor_subsystem.sensor_data -> data_stream.input_data;
+      conn2: port rfid_subsystem.rfid_data -> data_stream.input_data;
+      conn3: port data_stream.processed_data -> info_processing.input_data;
+      conn4: port info_processing.analyzed_data -> data_storage.input_data;
+      conn5: port info_processing.real_time_data -> feedback_loop.input_data;
+      conn6: port feedback_loop.control_signals -> sensor_subsystem.control_input;
+      conn7: port data_storage.stored_data -> user_interaction.display_data;
+    flows
+      latency_path: end to end flow 
+        sensor_subsystem.sensor_source -> conn1 -> 
+        data_stream.data_path -> conn3 -> 
+        info_processing.processing_path -> conn5 -> 
+        feedback_loop.feedback_path -> conn6 -> 
+        sensor_subsystem.sensor_sink 
+      {
+        latency => 00 ms .. 30 ms;
+      };
+  end Poultry_Monitoring_System.impl;
+
+  -- Define subsystems
+  system Sensor_Subsystem
+    features
+      sensor_data: out data port;
+      control_input: in data port;
+    flows
+      sensor_source: flow source sensor_data;
+      sensor_sink: flow sink control_input;
+  end Sensor_Subsystem;
+
+  system RFID_Subsystem
+    features
+      rfid_data: out data port;
+  end RFID_Subsystem;
+
+  system Authentication_Subsystem
+  end Authentication_Subsystem;
+
+  system Data_Stream
+    features
+      input_data: in data port;
+      processed_data: out data port;
+    flows
+      data_path: flow path input_data -> processed_data;
+  end Data_Stream;
+
+  system Information_Processing
+    features
+      input_data: in data port;
+      analyzed_data: out data port;
+      real_time_data: out data port;
+    flows
+      processing_path: flow path input_data -> real_time_data;
+  end Information_Processing;
+
+  system Data_Storage
+    features
+      input_data: in data port;
+      stored_data: out data port;
+  end Data_Storage;
+
+  system Feedback_Loop
+    features
+      input_data: in data port;
+      control_signals: out data port;
+    flows
+      feedback_path: flow path input_data -> control_signals;
+  end Feedback_Loop;
+
+  system User_Interaction
+    features
+      display_data: in data port;
+  end User_Interaction;
+
+end Poultry_Monitoring_System;
+package main
+public
+
+	
+	-- Data Types
+	data SensorData
+	end SensorData;
+
+	data MotionData
+	end MotionData;
+
+	data ImageData
+	end ImageData;
+
+	data EnvironmentalData
+	end EnvironmentalData;
+
+	data ProcessedData
+	end ProcessedData;
+
+	data QueueData
+	end QueueData;
+
+	data AlertData
+	end AlertData;
+
+	data AuthRequest
+	end AuthRequest;
+
+	data AuthResponse
+	end AuthResponse;
+
+	data ErrorData
+	end ErrorData;
+
+	data RealTimeAlertData
+	end RealTimeAlertData;
+
+	data HistoricalData
+	end HistoricalData;
+
+	data SyncData
+	end SyncData;
+
+	data FeedbackData
+	end FeedbackData;
+
+	data AnomalyData
+	end AnomalyData;
+
+	-- Device Components (Physical Entities)
+	device RFID_Reader
+		features
+			data_out: out data port SensorData;
+	end RFID_Reader;
+
+	device implementation RFID_Reader.impl
+	end RFID_Reader.impl;
+
+	device Environmental_Sensors
+		features
+			data_out: out data port EnvironmentalData;
+			control_in: in data port EnvironmentalData; 
+	end Environmental_Sensors;
+
+	device implementation Environmental_Sensors.impl
+	end Environmental_Sensors.impl;
+
+	device Camera
+		features
+			data_out: out data port ImageData;
+	end Camera;
+
+	device implementation Camera.impl
+	end Camera.impl;
+
+	device Motion_Sensor
+		features
+			data_out: out data port MotionData;
+	end Motion_Sensor;
+
+	device implementation Motion_Sensor.impl
+	end Motion_Sensor.impl;
+
+	device Nipple_Drinker
+		features
+			data_out: out data port MotionData;
+	end Nipple_Drinker;
+
+	device implementation Nipple_Drinker.impl
+	end Nipple_Drinker.impl;
+
+	-- System Components
+	system Data_Load_Balancer
+		features
+			data_in_rfid: in data port SensorData;
+			data_in_motion: in data port MotionData;
+			data_in_env: in data port EnvironmentalData;
+			data_in_img: in data port ImageData;
+			data_out: out data port ProcessedData;
+	end Data_Load_Balancer;
+
+	system implementation Data_Load_Balancer.impl
+	end Data_Load_Balancer.impl;
+
+	system Gateway_Interface
+		features
+			data_in: in data port ProcessedData;
+			auth_request: out data port AuthRequest;
+			auth_response: in data port AuthResponse;
+			valid_data_out: out data port ProcessedData;
+	end Gateway_Interface;
+
+	system implementation Gateway_Interface.impl
+	end Gateway_Interface.impl;
+
+	system Data_Validation_Module
+		features
+			data_in: in data port ProcessedData;
+			valid_data_out: out data port ProcessedData;
+			error_report: out data port ErrorData;
+	end Data_Validation_Module;
+
+	system implementation Data_Validation_Module.impl
+	end Data_Validation_Module.impl;
+
+system Real_Time_Analyzer
+	features
+		data_in: in data port ProcessedData;
+		alert_out: out data port AlertData;
+		db_store: out data port ProcessedData;
+	properties
+		Communication_Properties::Latency => 00 ms .. 30 ms;
+	end Real_Time_Analyzer;
+
+	system implementation Real_Time_Analyzer.impl
+	end Real_Time_Analyzer.impl;
+
+	system Error_Handling_Module
+		features
+			error_in: in data port ErrorData;
+			backup_request: out data port ProcessedData;
+	end Error_Handling_Module;
+
+	system implementation Error_Handling_Module.impl
+	end Error_Handling_Module.impl;
+
+	system Redundancy_Module
+		features
+			backup_data: in data port ProcessedData;
+			backup_out: out data port ProcessedData;
+	end Redundancy_Module;
+
+	system implementation Redundancy_Module.impl
+	end Redundancy_Module.impl;
+
+	system Authentication_Service
+		features
+			auth_request_in: in data port AuthRequest;
+			auth_response_out: out data port AuthResponse;
+			auth_request_out: out data port AuthRequest;
+			auth_response_in: in data port AuthResponse;
+	end Authentication_Service;
+
+	system implementation Authentication_Service.impl
+	end Authentication_Service.impl;
+
+	system Authorization_Module
+		features
+			auth_in: in data port AuthRequest;
+			auth_out: out data port AuthResponse;
+	end Authorization_Module;
+
+	system implementation Authorization_Module.impl
+	end Authorization_Module.impl;
+
+	system Alert_System
+		features
+			alert_in: in data port AlertData;
+			alert_out: out data port AlertData;
+	end Alert_System;
+
+	system implementation Alert_System.impl
+	end Alert_System.impl;
+
+	system Real_Time_Alert
+		features
+			alert_in_from_alert_system: in data port AlertData;
+			alert_in_from_dashboard: in data port AlertData;
+	end Real_Time_Alert;
+
+	system implementation Real_Time_Alert.impl
+	end Real_Time_Alert.impl;
+
+	system Management_Dashboard
+		features
+			alert_in: in data port AlertData;
+			alert_out: out data port AlertData; 
+			db_in: in data port ProcessedData;
+			db_out: out data port ProcessedData;
+	end Management_Dashboard;
+
+	system implementation Management_Dashboard.impl
+	end Management_Dashboard.impl;
+
+	system User_Management
+		features
+			auth_request: out data port AuthRequest;
+			auth_response: in data port AuthResponse;
+	end User_Management;
+
+	system implementation User_Management.impl
+	end User_Management.impl;
+
+	system Reports
+		features
+			db_in: in data port ProcessedData;
+	end Reports;
+
+	system implementation Reports.impl
+	end Reports.impl;
+
+	system RFID_Processing
+		features
+			data_in: in data port ProcessedData;
+			data_out: out data port ProcessedData;
+	end RFID_Processing;
+
+	system implementation RFID_Processing.impl
+	end RFID_Processing.impl;
+
+	system Motion_Processing
+		features
+			data_in: in data port ProcessedData;
+			data_out: out data port ProcessedData;
+	end Motion_Processing;
+
+	system implementation Motion_Processing.impl
+	end Motion_Processing.impl;
+
+	system Image_Processing
+		features
+			data_in: in data port ProcessedData;
+			data_out: out data port ProcessedData;
+	end Image_Processing;
+
+	system implementation Image_Processing.impl
+	end Image_Processing.impl;
+
+	system Environmental_Processing
+		features
+			data_in: in data port ProcessedData;
+			data_out: out data port ProcessedData;
+	end Environmental_Processing;
+
+	system implementation Environmental_Processing.impl
+	end Environmental_Processing.impl;
+
+	-- for Pattern and Anomaly Detection
+	system Pattern_Anomaly_Detector
+		features
+			data_in: in data port ProcessedData;
+			anomaly_out: out data port QueueData; 
+	end Pattern_Anomaly_Detector;
+
+	system implementation Pattern_Anomaly_Detector.impl
+	end Pattern_Anomaly_Detector.impl;
+
+	system RowQueue
+		features
+			data_in: in data port ProcessedData;
+			data_out: out data port QueueData;
+	end RowQueue;
+
+	system implementation RowQueue.impl
+	end RowQueue.impl;
+
+	system Historical_Processor
+		features
+			data_in: in data port ProcessedData;
+			historical_out: out data port HistoricalData;
+	end Historical_Processor;
+
+	system implementation Historical_Processor.impl
+	end Historical_Processor.impl;
+
+	system Health_Monitor
+		features
+			data_in: in data port QueueData;
+			feedback_out: out data port FeedbackData;
+	end Health_Monitor;
+
+	system implementation Health_Monitor.impl
+	end Health_Monitor.impl;
+
+	system DB_Sync_Manager
+		features
+			local_db_in: in data port HistoricalData;
+			cloud_sync_out: out data port ProcessedData;
+			sync_in: out data port ProcessedData;
+	end DB_Sync_Manager;
+
+	system implementation DB_Sync_Manager.impl
+	end DB_Sync_Manager.impl;
+
+	system Automated_Feedback_Loops
+		features
+			monitoring_data_in: in data port FeedbackData;
+			control_out: out data port EnvironmentalData;
+	end Automated_Feedback_Loops;
+
+	system implementation Automated_Feedback_Loops.impl
+	end Automated_Feedback_Loops.impl;
+
+	-- Top-Level System that connects all subsystems
+	system Precision_Livestock_Farming_System
+	end Precision_Livestock_Farming_System;
+
+	system implementation Precision_Livestock_Farming_System.impl
+		subcomponents
+			rfid: device RFID_Reader.impl;
+			env_sensors: device Environmental_Sensors.impl;
+			camera: device Camera.impl;
+			motion_sensor: device Motion_Sensor.impl;
+			nipple_drinker: device Nipple_Drinker.impl;
+			data_load_balancer: system Data_Load_Balancer.impl;
+			gateway: system Gateway_Interface.impl;
+			data_validation: system Data_Validation_Module.impl;
+			real_time_analyzer: system Real_Time_Analyzer.impl;
+			error_handling: system Error_Handling_Module.impl;
+			redundancy: system Redundancy_Module.impl;
+			auth_service: system Authentication_Service.impl;
+			auth_module: system Authorization_Module.impl;
+			alert_system: system Alert_System.impl;
+			real_time_alert: system Real_Time_Alert.impl;
+			management_dashboard: system Management_Dashboard.impl;
+			user_management: system User_Management.impl;
+			reports: system Reports.impl;
+			rfid_processing: system RFID_Processing.impl;
+			motion_processing: system Motion_Processing.impl;
+			image_processing: system Image_Processing.impl;
+			env_processing: system Environmental_Processing.impl;
+			row_queue: system RowQueue.impl;
+			historical_processor: system Historical_Processor.impl;
+			health_monitor: system Health_Monitor.impl;
+			pattern_anomaly_detector: system Pattern_Anomaly_Detector.impl;
+			db_sync_manager: system DB_Sync_Manager.impl;
+			automated_feedback: system Automated_Feedback_Loops.impl;
+		connections
+			-- Sensor Subsystem
+			c1: port rfid.data_out -> data_load_balancer.data_in_rfid;
+			c2: port env_sensors.data_out -> data_load_balancer.data_in_env;
+			c3: port camera.data_out -> data_load_balancer.data_in_img;
+			c4: port motion_sensor.data_out -> data_load_balancer.data_in_motion;
+			c5: port nipple_drinker.data_out -> data_load_balancer.data_in_motion;
+
+			-- Data Stream
+			c6: port data_load_balancer.data_out -> gateway.data_in;
+			c7: port gateway.auth_request -> auth_service.auth_request_in;
+			c8: port auth_service.auth_response_out -> gateway.auth_response;
+			c9: port gateway.valid_data_out -> data_validation.data_in;
+			c10: port data_validation.valid_data_out -> real_time_analyzer.data_in;
+			c11: port real_time_analyzer.alert_out -> alert_system.alert_in;
+			c12: port real_time_analyzer.db_store -> management_dashboard.db_in;
+			c13: port data_validation.error_report -> error_handling.error_in;
+			c14: port error_handling.backup_request -> redundancy.backup_data;
+
+			-- New Processing Systems
+			c15: port data_validation.valid_data_out -> rfid_processing.data_in;
+			c16: port rfid_processing.data_out -> row_queue.data_in;
+			c17: port row_queue.data_out -> health_monitor.data_in;
+			c18: port health_monitor.feedback_out -> automated_feedback.monitoring_data_in;
+
+			-- Historical Data & Sync
+			c19: port real_time_analyzer.db_store -> historical_processor.data_in;
+			c20: port historical_processor.historical_out -> db_sync_manager.local_db_in;
+			c21: port db_sync_manager.sync_in -> management_dashboard.db_in;
+
+			-- Automated Feedback Loop
+			c22: port automated_feedback.control_out -> env_sensors.control_in;
+
+			-- Authentication & Authorization Connection
+			c23: port auth_service.auth_request_out -> auth_module.auth_in;
+			c24: port auth_module.auth_out -> auth_service.auth_response_in;
+
+			-- Real-Time Alerts and User Management
+			c25: port alert_system.alert_out -> real_time_alert.alert_in_from_alert_system;
+			c26: port management_dashboard.alert_out -> real_time_alert.alert_in_from_dashboard;
+			c27: port user_management.auth_request -> auth_service.auth_request_in;
+			c28: port auth_service.auth_response_out -> user_management.auth_response;
+			c29: port management_dashboard.db_out -> reports.db_in;
+
+			-- Pattern and Anomaly Detection
+			c30: port real_time_analyzer.db_store -> pattern_anomaly_detector.data_in;
+			c31: port pattern_anomaly_detector.anomaly_out -> health_monitor.data_in;
+	end Precision_Livestock_Farming_System.impl;
+
+end main;
